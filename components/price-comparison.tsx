@@ -1,144 +1,185 @@
 "use client"
 
 import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Star, MapPin, Leaf, TrendingDown, TrendingUp } from "lucide-react"
-import Image from "next/image"
+import { Star, MapPin, Clock, TrendingDown, Award } from "lucide-react"
 
 interface Product {
-  id: number
+  id: string
   name: string
   price: number
-  unit: string
-  image: string
   seller: string
   rating: number
-  location: string
-  isEco?: boolean
-  stock: number
+  distance: string
+  deliveryTime: string
 }
 
 interface PriceComparisonProps {
-  productName: string
-  products: Product[]
-  onAddToCart: (product: Product) => void
+  product: Product
 }
 
-export function PriceComparison({ productName, products, onAddToCart }: PriceComparisonProps) {
+export function PriceComparison({ product }: PriceComparisonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Sort products by price for comparison
-  const sortedProducts = [...products].sort((a, b) => a.price - b.price)
-  const lowestPrice = sortedProducts[0]?.price || 0
-  const highestPrice = sortedProducts[sortedProducts.length - 1]?.price || 0
+  // Generate mock comparison data based on the product
+  const generateComparisonData = (baseProduct: Product) => {
+    const sellers = [
+      { name: baseProduct.seller, rating: baseProduct.rating, distance: baseProduct.distance },
+      { name: "Fresh Market Co.", rating: 4.2, distance: "1.8 km" },
+      { name: "Organic Valley", rating: 4.6, distance: "2.3 km" },
+      { name: "Local Farmers Hub", rating: 4.4, distance: "3.1 km" },
+      { name: "Green Grocers", rating: 4.1, distance: "2.7 km" },
+    ]
 
-  const getPriceIndicator = (price: number) => {
-    if (price === lowestPrice) return { icon: TrendingDown, color: "text-green-600", label: "Lowest" }
-    if (price === highestPrice) return { icon: TrendingUp, color: "text-red-600", label: "Highest" }
-    return null
+    return sellers.map((seller, index) => ({
+      id: `${baseProduct.id}-${index}`,
+      name: baseProduct.name,
+      seller: seller.name,
+      price: index === 0 ? baseProduct.price : baseProduct.price + (Math.random() * 20 - 10),
+      rating: seller.rating,
+      distance: seller.distance,
+      deliveryTime: `${20 + index * 10}-${35 + index * 10} min`,
+      inStock: Math.random() > 0.1, // 90% chance of being in stock
+      organic: Math.random() > 0.5,
+    }))
   }
+
+  const comparisonData = generateComparisonData(product)
+  const sortedByPrice = [...comparisonData].sort((a, b) => a.price - b.price)
+  const cheapestPrice = sortedByPrice[0]?.price || 0
+  const averagePrice = comparisonData.reduce((sum, item) => sum + item.price, 0) / comparisonData.length
+  const maxSavings = Math.max(...comparisonData.map((item) => item.price)) - cheapestPrice
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="bg-transparent">
-          Compare Prices ({products.length})
+        <Button variant="outline" size="sm">
+          Compare Prices
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Price Comparison - {productName}</DialogTitle>
+          <DialogTitle className="flex items-center space-x-2">
+            <TrendingDown className="w-5 h-5 text-blue-600" />
+            <span>Price Comparison - {product.name}</span>
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {sortedProducts.map((product) => {
-            const priceIndicator = getPriceIndicator(product.price)
-            const savingsFromHighest = highestPrice - product.price
+        <div className="space-y-6">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">₹{cheapestPrice.toFixed(0)}</div>
+                <div className="text-sm text-gray-600">Lowest Price</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">₹{averagePrice.toFixed(0)}</div>
+                <div className="text-sm text-gray-600">Average Price</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">₹{maxSavings.toFixed(0)}</div>
+                <div className="text-sm text-gray-600">Max Savings</div>
+              </CardContent>
+            </Card>
+          </div>
 
-            return (
-              <Card key={product.id} className="hover:shadow-md transition-shadow">
+          {/* Seller Comparison */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">Available Sellers</h3>
+            {sortedByPrice.map((item, index) => (
+              <Card key={item.id} className={`${index === 0 ? "ring-2 ring-green-500 bg-green-50" : ""}`}>
                 <CardContent className="p-4">
-                  <div className="flex items-center space-x-4">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      width={80}
-                      height={80}
-                      className="rounded-lg object-cover"
-                    />
-
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-lg">{product.seller}</h3>
-                        <div className="flex items-center space-x-2">
-                          {product.isEco && (
-                            <Badge className="bg-green-100 text-green-800">
-                              <Leaf className="w-3 h-3 mr-1" />
-                              Eco +5 pts
-                            </Badge>
-                          )}
-                          {priceIndicator && (
-                            <Badge className={`${priceIndicator.color} bg-transparent border`}>
-                              <priceIndicator.icon className="w-3 h-3 mr-1" />
-                              {priceIndicator.label}
-                            </Badge>
-                          )}
-                        </div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h4 className="font-semibold">{item.seller}</h4>
+                        {index === 0 && (
+                          <Badge className="bg-green-600 text-white">
+                            <Award className="w-3 h-3 mr-1" />
+                            Best Price
+                          </Badge>
+                        )}
+                        {item.organic && (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Organic
+                          </Badge>
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
-                        <div>
-                          <div className="text-gray-600">Price</div>
-                          <div className="font-bold text-lg text-green-600">
-                            ₹{product.price}/{product.unit}
-                          </div>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span>{item.rating}</span>
                         </div>
-                        <div>
-                          <div className="text-gray-600">Rating</div>
-                          <div className="flex items-center">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="font-semibold">{product.rating}</span>
-                          </div>
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>{item.distance}</span>
                         </div>
-                        <div>
-                          <div className="text-gray-600">Location</div>
-                          <div className="flex items-center text-sm">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            {product.location}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Stock</div>
-                          <div className="font-semibold">
-                            {product.stock} {product.unit}
-                          </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span>{item.deliveryTime}</span>
                         </div>
                       </div>
+                    </div>
 
-                      {savingsFromHighest > 0 && (
-                        <div className="text-sm text-green-600 mb-3">
-                          💰 Save ₹{savingsFromHighest} compared to highest price
-                        </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">₹{item.price.toFixed(0)}</div>
+                      {index > 0 && (
+                        <div className="text-sm text-red-600">+₹{(item.price - cheapestPrice).toFixed(0)} more</div>
                       )}
-
                       <Button
-                        onClick={() => {
-                          onAddToCart(product)
-                          setIsOpen(false)
-                        }}
-                        className="w-full"
+                        size="sm"
+                        className="mt-2"
+                        disabled={!item.inStock}
+                        variant={index === 0 ? "default" : "outline"}
                       >
-                        Add to Cart
+                        {item.inStock ? "Add to Cart" : "Out of Stock"}
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            )
-          })}
+            ))}
+          </div>
+
+          {/* Price History (Mock) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Price Insights</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="font-medium mb-2">Price Range</div>
+                  <div className="text-gray-600">
+                    ₹{cheapestPrice.toFixed(0)} - ₹{Math.max(...comparisonData.map((i) => i.price)).toFixed(0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium mb-2">Best Time to Buy</div>
+                  <div className="text-gray-600">Now (prices are stable)</div>
+                </div>
+                <div>
+                  <div className="font-medium mb-2">Availability</div>
+                  <div className="text-gray-600">
+                    {comparisonData.filter((i) => i.inStock).length} of {comparisonData.length} sellers have stock
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium mb-2">Recommendation</div>
+                  <div className="text-green-600 font-medium">{cheapestPrice.seller} offers the best value</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
