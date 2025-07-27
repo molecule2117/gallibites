@@ -1,423 +1,307 @@
 "use client"
 
 import { useState } from "react"
-import { Minus, Plus, Trash2, ShoppingBag, Truck, Clock, Leaf, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
-import Image from "next/image"
+import { Minus, Plus, Trash2, ShoppingBag, Leaf, MapPin, Clock, CreditCard } from "lucide-react"
 
 interface CartItem {
   id: string
   name: string
   image: string
   price: number
-  originalPrice?: number
-  unit: string
-  seller: string
   quantity: number
-  ecoPoints: number
+  seller: string
+  ecoFriendly: boolean
   deliveryTime: string
-  organic?: boolean
-  inStock: boolean
+  distance: string
 }
 
-const cartItems: CartItem[] = [
-  {
-    id: "1",
-    name: "Fresh Onions",
-    image: "/products/fresh-onions.jpg",
-    price: 25,
-    originalPrice: 30,
-    unit: "per kg",
-    seller: "Ravi Vegetables",
-    quantity: 2,
-    ecoPoints: 5,
-    deliveryTime: "30 mins",
-    organic: true,
-    inStock: true,
-  },
-  {
-    id: "11",
-    name: "Red Chili Powder",
-    image: "/products/red-chili-powder.jpg",
-    price: 150,
-    unit: "per kg",
-    seller: "Spice Master",
-    quantity: 1,
-    ecoPoints: 12,
-    deliveryTime: "25 mins",
-    inStock: true,
-  },
-  {
-    id: "2",
-    name: "Fresh Tomatoes",
-    image: "/products/fresh-tomatoes.jpg",
-    price: 40,
-    unit: "per kg",
-    seller: "Green Farm Co.",
-    quantity: 3,
-    ecoPoints: 8,
-    deliveryTime: "45 mins",
-    organic: true,
-    inStock: true,
-  },
-  {
-    id: "19",
-    name: "Eco Paper Plates",
-    image: "/products/eco-paper-plates.jpg",
-    price: 80,
-    unit: "per 50 pieces",
-    seller: "Eco Pack",
-    quantity: 2,
-    ecoPoints: 25,
-    deliveryTime: "30 mins",
-    inStock: true,
-  },
-  {
-    id: "25",
-    name: "Basmati Rice",
-    image: "/products/basmati-rice.jpg",
-    price: 80,
-    unit: "per kg",
-    seller: "Rice Mills",
-    quantity: 5,
-    ecoPoints: 12,
-    deliveryTime: "45 mins",
-    inStock: true,
-  },
-]
-
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>(cartItems)
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: "1",
+      name: "Fresh Onions",
+      image: "/products/fresh-onions.jpg",
+      price: 30,
+      quantity: 2,
+      seller: "Green Valley Farm",
+      ecoFriendly: true,
+      deliveryTime: "30-45 min",
+      distance: "2.1 km",
+    },
+    {
+      id: "2",
+      name: "Red Chili Powder",
+      image: "/products/red-chili-powder.jpg",
+      price: 85,
+      quantity: 1,
+      seller: "Spice Garden",
+      ecoFriendly: false,
+      deliveryTime: "25-40 min",
+      distance: "1.5 km",
+    },
+    {
+      id: "3",
+      name: "Fresh Tomatoes",
+      image: "/products/fresh-tomatoes.jpg",
+      price: 45,
+      quantity: 3,
+      seller: "Local Farmers Co-op",
+      ecoFriendly: true,
+      deliveryTime: "45-60 min",
+      distance: "3.2 km",
+    },
+    {
+      id: "4",
+      name: "Turmeric Powder",
+      image: "/products/turmeric-powder.jpg",
+      price: 95,
+      quantity: 1,
+      seller: "Pure Spices",
+      ecoFriendly: true,
+      deliveryTime: "35-50 min",
+      distance: "2.3 km",
+    },
+  ])
+
   const [promoCode, setPromoCode] = useState("")
-  const [deliveryAddress, setDeliveryAddress] = useState("")
-  const [deliveryNotes, setDeliveryNotes] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState("")
-  const [scheduleDelivery, setScheduleDelivery] = useState(false)
-  const [deliveryDate, setDeliveryDate] = useState("")
-  const [deliveryTime, setDeliveryTime] = useState("")
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null)
 
   const updateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity === 0) {
-      setItems(items.filter((item) => item.id !== id))
-    } else {
-      setItems(items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+      removeItem(id)
+      return
     }
+    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
   }
 
   const removeItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id))
+    setCartItems((items) => items.filter((item) => item.id !== id))
   }
-
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const originalTotal = items.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0)
-  const savings = originalTotal - subtotal
-  const totalEcoPoints = items.reduce((sum, item) => sum + item.ecoPoints * item.quantity, 0)
-  const deliveryFee = subtotal > 500 ? 0 : 40
-  const total = subtotal + deliveryFee
 
   const applyPromoCode = () => {
-    // Promo code logic would go here
-    console.log("Applying promo code:", promoCode)
+    if (promoCode.toLowerCase() === "eco10") {
+      setAppliedPromo("eco10")
+    } else if (promoCode.toLowerCase() === "first20") {
+      setAppliedPromo("first20")
+    }
+    setPromoCode("")
   }
 
-  if (items.length === 0) {
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const ecoItemsCount = cartItems.filter((item) => item.ecoFriendly).length
+  const ecoDiscount = appliedPromo === "eco10" ? subtotal * 0.1 : 0
+  const firstOrderDiscount = appliedPromo === "first20" ? subtotal * 0.2 : 0
+  const deliveryFee = subtotal > 200 ? 0 : 25
+  const ecoPoints = Math.floor(subtotal * 0.1) + ecoItemsCount * 10
+  const total = subtotal - ecoDiscount - firstOrderDiscount + deliveryFee
+
+  if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 mb-6">Add some products to get started</p>
-          <Link href="/vendor/marketplace">
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-12 text-center">
+            <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+            <p className="text-gray-600 mb-6">Add some delicious items from our marketplace</p>
             <Button>Continue Shopping</Button>
-          </Link>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/vendor/marketplace">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Continue Shopping
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
-            <Badge variant="secondary">{items.length} items</Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <Card key={item.id}>
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    <Image
+    <div className="container mx-auto p-6">
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Cart Items */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ShoppingBag className="w-5 h-5" />
+                <span>Your Cart ({cartItems.length} items)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                  <div className="relative">
+                    <img
                       src={item.image || "/placeholder.svg"}
                       alt={item.name}
-                      width={80}
-                      height={80}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
+                    {item.ecoFriendly && (
+                      <Badge className="absolute -top-2 -right-2 bg-green-600 text-xs">
+                        <Leaf className="w-3 h-3" />
+                      </Badge>
+                    )}
+                  </div>
 
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold text-lg">{item.name}</h3>
-                          <p className="text-sm text-gray-600">{item.seller}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {item.organic && (
-                              <Badge variant="secondary" className="text-xs">
-                                <Leaf className="h-3 w-3 mr-1" />
-                                Organic
-                              </Badge>
-                            )}
-                            <div className="flex items-center gap-1 text-sm text-green-600">
-                              <Leaf className="h-3 w-3" />+{item.ecoPoints * item.quantity} EcoPoints
-                            </div>
-                          </div>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-sm text-gray-600">by {item.seller}</p>
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                      <div className="flex items-center">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {item.distance}
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-medium w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <span className="text-sm text-gray-500 ml-2">{item.unit}</span>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-green-600">₹{item.price * item.quantity}</span>
-                            {item.originalPrice && (
-                              <span className="text-sm text-gray-500 line-through">
-                                ₹{item.originalPrice * item.quantity}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <Clock className="h-3 w-3" />
-                            {item.deliveryTime}
-                          </div>
-                        </div>
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {item.deliveryTime}
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
 
-            {/* Delivery Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-5 w-5" />
-                  Delivery Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="address">Delivery Address</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Enter your complete delivery address..."
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="notes">Delivery Notes (Optional)</Label>
-                  <Input
-                    id="notes"
-                    placeholder="Any special instructions..."
-                    value={deliveryNotes}
-                    onChange={(e) => setDeliveryNotes(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="schedule" checked={scheduleDelivery} onCheckedChange={setScheduleDelivery} />
-                  <Label htmlFor="schedule">Schedule delivery for later</Label>
-                </div>
-
-                {scheduleDelivery && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="date">Delivery Date</Label>
-                      <Input
-                        id="date"
-                        type="date"
-                        value={deliveryDate}
-                        onChange={(e) => setDeliveryDate(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="time">Preferred Time</Label>
-                      <Select value={deliveryTime} onValueChange={setDeliveryTime}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
-                          <SelectItem value="afternoon">Afternoon (12 PM - 4 PM)</SelectItem>
-                          <SelectItem value="evening">Evening (4 PM - 8 PM)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Order Summary */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal}</span>
-                  </div>
-                  {savings > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>You Save</span>
-                      <span>-₹{savings}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span>Delivery Fee</span>
-                    <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
-                  </div>
-                  {deliveryFee === 0 && <p className="text-xs text-green-600">Free delivery on orders above ₹500</p>}
-                </div>
-
-                <Separator />
-
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>₹{total}</span>
-                </div>
-
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <Leaf className="h-4 w-4" />
-                    <span className="font-medium">EcoPoints Earned: {totalEcoPoints}</span>
-                  </div>
-                  <p className="text-xs text-green-600 mt-1">Use EcoPoints for discounts on future orders</p>
-                </div>
-
-                {/* Promo Code */}
-                <div className="space-y-2">
-                  <Label htmlFor="promo">Promo Code</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="promo"
-                      placeholder="Enter code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                    />
-                    <Button variant="outline" onClick={applyPromoCode}>
-                      Apply
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                </div>
 
-                {/* Payment Method */}
-                <div className="space-y-2">
-                  <Label>Payment Method</Label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cod">Cash on Delivery</SelectItem>
-                      <SelectItem value="upi">UPI Payment</SelectItem>
-                      <SelectItem value="card">Credit/Debit Card</SelectItem>
-                      <SelectItem value="wallet">Digital Wallet</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="text-right">
+                    <div className="font-semibold">₹{item.price * item.quantity}</div>
+                    <div className="text-sm text-gray-600">₹{item.price} each</div>
+                  </div>
 
-                <Button className="w-full" size="lg" disabled={!deliveryAddress || !paymentMethod}>
-                  Place Order - ₹{total}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Promo Code */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Promo Code</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="Enter promo code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <Button onClick={applyPromoCode} variant="outline">
+                  Apply
                 </Button>
-
-                <p className="text-xs text-gray-500 text-center">
-                  By placing this order, you agree to our terms and conditions
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Estimated Delivery */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Estimated Delivery</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {Array.from(new Set(items.map((item) => item.seller))).map((seller) => {
-                    const sellerItems = items.filter((item) => item.seller === seller)
-                    const maxDeliveryTime = Math.max(...sellerItems.map((item) => Number.parseInt(item.deliveryTime)))
-
-                    return (
-                      <div key={seller} className="flex justify-between text-sm">
-                        <span>{seller}</span>
-                        <span className="text-gray-600">{maxDeliveryTime} mins</span>
-                      </div>
-                    )
-                  })}
+              </div>
+              {appliedPromo && (
+                <div className="mt-2">
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    {appliedPromo === "eco10" ? "ECO10: 10% off applied!" : "FIRST20: 20% off applied!"}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+              <div className="mt-3 text-sm text-gray-600">
+                <p>Available codes:</p>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>ECO10 - 10% off on eco-friendly items</li>
+                  <li>FIRST20 - 20% off on first order</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Order Summary */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal}</span>
+                </div>
+
+                {ecoDiscount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Eco Discount (10%)</span>
+                    <span>-₹{ecoDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+
+                {firstOrderDiscount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>First Order Discount (20%)</span>
+                    <span>-₹{firstOrderDiscount.toFixed(0)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <span>Delivery Fee</span>
+                  <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
+                </div>
+
+                {deliveryFee === 0 && <div className="text-xs text-green-600">Free delivery on orders above ₹200</div>}
+              </div>
+
+              <Separator />
+
+              <div className="flex justify-between font-semibold text-lg">
+                <span>Total</span>
+                <span>₹{total}</span>
+              </div>
+
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Leaf className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">You'll earn {ecoPoints} EcoPoints</span>
+                </div>
+                <p className="text-xs text-green-700 mt-1">{ecoItemsCount} eco-friendly items in your cart</p>
+              </div>
+
+              <Button className="w-full" size="lg">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Proceed to Checkout
+              </Button>
+
+              <Button variant="outline" className="w-full bg-transparent">
+                Continue Shopping
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Delivery Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Delivery Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 text-gray-600" />
+                  <span>Estimated delivery: 45-75 minutes</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-gray-600" />
+                  <span>Multiple vendors in your area</span>
+                </div>
+                <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                  Orders from different vendors may arrive separately
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
