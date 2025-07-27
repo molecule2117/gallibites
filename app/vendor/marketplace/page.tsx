@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { PriceComparison } from "@/components/price-comparison"
 import EcoPointsDisplay from "@/components/eco-points-display"
 import ProductShowcase from "@/components/product-showcase"
+import Image from "next/image"
 
 interface Product {
   id: string
@@ -39,7 +40,7 @@ const products: Product[] = [
   {
     id: "1",
     name: "Fresh Onions",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Onions",
+    image: "/products/fresh-onions.jpg",
     price: 25,
     originalPrice: 30,
     unit: "per kg",
@@ -56,7 +57,7 @@ const products: Product[] = [
   {
     id: "2",
     name: "Fresh Tomatoes",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Tomatoes",
+    image: "/products/fresh-tomatoes.jpg",
     price: 40,
     unit: "per kg",
     seller: "Green Farm Co.",
@@ -72,7 +73,7 @@ const products: Product[] = [
   {
     id: "3",
     name: "Fresh Potatoes",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Potatoes",
+    image: "/products/fresh-potatoes.jpg",
     price: 20,
     unit: "per kg",
     seller: "Local Farmers",
@@ -87,7 +88,7 @@ const products: Product[] = [
   {
     id: "4",
     name: "Green Chilies",
-    image: "/placeholder.svg?height=300&width=400&text=Green+Chilies",
+    image: "/products/green-chilies.jpg",
     price: 60,
     unit: "per kg",
     seller: "Spice Garden",
@@ -103,7 +104,7 @@ const products: Product[] = [
   {
     id: "5",
     name: "Fresh Ginger",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Ginger",
+    image: "/products/fresh-ginger.jpg",
     price: 80,
     unit: "per kg",
     seller: "Herb Valley",
@@ -119,7 +120,7 @@ const products: Product[] = [
   {
     id: "6",
     name: "Fresh Garlic",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Garlic",
+    image: "/products/fresh-garlic.jpg",
     price: 120,
     unit: "per kg",
     seller: "Organic Farms",
@@ -135,7 +136,7 @@ const products: Product[] = [
   {
     id: "7",
     name: "Fresh Coriander",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Coriander",
+    image: "/products/fresh-coriander.jpg",
     price: 15,
     unit: "per bunch",
     seller: "Green Herbs",
@@ -151,7 +152,7 @@ const products: Product[] = [
   {
     id: "8",
     name: "Fresh Carrots",
-    image: "/placeholder.svg?height=300&width=400&text=Fresh+Carrots",
+    image: "/products/fresh-carrots.jpg",
     price: 35,
     unit: "per kg",
     seller: "Farm Fresh",
@@ -163,12 +164,42 @@ const products: Product[] = [
     deliveryTime: "35 mins",
     distance: "1.1 km",
   },
+  {
+    id: "9",
+    name: "Fresh Cauliflower",
+    image: "/products/fresh-cauliflower.jpg",
+    price: 30,
+    unit: "per piece",
+    seller: "Veggie World",
+    rating: 4.2,
+    reviews: 103,
+    category: "vegetables",
+    ecoPoints: 6,
+    inStock: true,
+    deliveryTime: "40 mins",
+    distance: "1.3 km",
+  },
+  {
+    id: "10",
+    name: "Fresh Cabbage",
+    image: "/products/fresh-cabbage.jpg",
+    price: 25,
+    unit: "per piece",
+    seller: "Green Valley",
+    rating: 4.0,
+    reviews: 87,
+    category: "vegetables",
+    ecoPoints: 4,
+    inStock: true,
+    deliveryTime: "45 mins",
+    distance: "1.4 km",
+  },
 
   // Spices
   {
     id: "11",
     name: "Red Chili Powder",
-    image: "/placeholder.svg?height=300&width=400&text=Red+Chili+Powder",
+    image: "/products/red-chili-powder.jpg",
     price: 150,
     unit: "per kg",
     seller: "Spice Master",
@@ -184,7 +215,7 @@ const products: Product[] = [
   {
     id: "12",
     name: "Turmeric Powder",
-    image: "/placeholder.svg?height=300&width=400&text=Turmeric+Powder",
+    image: "/products/turmeric-powder.jpg",
     price: 180,
     unit: "per kg",
     seller: "Golden Spices",
@@ -198,12 +229,60 @@ const products: Product[] = [
     organic: true,
     bulk: true,
   },
+  {
+    id: "13",
+    name: "Garam Masala",
+    image: "/products/garam-masala.jpg",
+    price: 250,
+    unit: "per kg",
+    seller: "Aroma Spices",
+    rating: 4.9,
+    reviews: 167,
+    category: "spices",
+    ecoPoints: 18,
+    inStock: true,
+    deliveryTime: "35 mins",
+    distance: "1.0 km",
+    bulk: true,
+  },
+  {
+    id: "14",
+    name: "Coriander Powder",
+    image: "/products/coriander-powder.jpg",
+    price: 120,
+    unit: "per kg",
+    seller: "Pure Spices",
+    rating: 4.6,
+    reviews: 134,
+    category: "spices",
+    ecoPoints: 10,
+    inStock: true,
+    deliveryTime: "25 mins",
+    distance: "0.7 km",
+    bulk: true,
+  },
+  {
+    id: "15",
+    name: "Cumin Powder",
+    image: "/products/cumin-powder.jpg",
+    price: 200,
+    unit: "per kg",
+    seller: "Spice Garden",
+    rating: 4.5,
+    reviews: 156,
+    category: "spices",
+    ecoPoints: 14,
+    inStock: true,
+    deliveryTime: "30 mins",
+    distance: "0.9 km",
+    bulk: true,
+  },
 
   // Oils
   {
     id: "16",
     name: "Cooking Oil",
-    image: "/placeholder.svg?height=300&width=400&text=Cooking+Oil",
+    image: "/products/cooking-oil.jpg",
     price: 120,
     unit: "per liter",
     seller: "Oil Mills",
@@ -216,12 +295,78 @@ const products: Product[] = [
     distance: "1.2 km",
     bulk: true,
   },
+  {
+    id: "17",
+    name: "Mustard Oil",
+    image: "/products/mustard-oil.jpg",
+    price: 140,
+    unit: "per liter",
+    seller: "Traditional Oils",
+    rating: 4.4,
+    reviews: 178,
+    category: "oils",
+    ecoPoints: 10,
+    inStock: true,
+    deliveryTime: "35 mins",
+    distance: "1.0 km",
+    organic: true,
+  },
+  {
+    id: "18",
+    name: "Coconut Oil",
+    image: "/products/coconut-oil.jpg",
+    price: 200,
+    unit: "per liter",
+    seller: "Coconut Co.",
+    rating: 4.6,
+    reviews: 145,
+    category: "oils",
+    ecoPoints: 15,
+    inStock: true,
+    deliveryTime: "45 mins",
+    distance: "1.5 km",
+    organic: true,
+  },
+
+  // Packaging
+  {
+    id: "19",
+    name: "Eco Paper Plates",
+    image: "/products/eco-paper-plates.jpg",
+    price: 80,
+    unit: "per 50 pieces",
+    seller: "Eco Pack",
+    rating: 4.2,
+    reviews: 234,
+    category: "packaging",
+    ecoPoints: 25,
+    inStock: true,
+    deliveryTime: "30 mins",
+    distance: "0.8 km",
+    bulk: true,
+  },
+  {
+    id: "20",
+    name: "Recycled Containers",
+    image: "/products/recycled-containers.jpg",
+    price: 150,
+    unit: "per 20 pieces",
+    seller: "Green Pack",
+    rating: 4.1,
+    reviews: 167,
+    category: "packaging",
+    ecoPoints: 30,
+    inStock: true,
+    deliveryTime: "35 mins",
+    distance: "1.1 km",
+    bulk: true,
+  },
 
   // Grains
   {
     id: "25",
     name: "Basmati Rice",
-    image: "/placeholder.svg?height=300&width=400&text=Basmati+Rice",
+    image: "/products/basmati-rice.jpg",
     price: 80,
     unit: "per kg",
     seller: "Rice Mills",
@@ -232,6 +377,22 @@ const products: Product[] = [
     inStock: true,
     deliveryTime: "45 mins",
     distance: "1.5 km",
+    bulk: true,
+  },
+  {
+    id: "26",
+    name: "Wheat Flour",
+    image: "/products/wheat-flour.jpg",
+    price: 35,
+    unit: "per kg",
+    seller: "Flour Mills",
+    rating: 4.2,
+    reviews: 278,
+    category: "grains",
+    ecoPoints: 8,
+    inStock: true,
+    deliveryTime: "35 mins",
+    distance: "1.0 km",
     bulk: true,
   },
 ]
@@ -251,6 +412,7 @@ export default function MarketplacePage() {
     { id: "vegetables", name: "Vegetables", count: products.filter((p) => p.category === "vegetables").length },
     { id: "spices", name: "Spices", count: products.filter((p) => p.category === "spices").length },
     { id: "oils", name: "Oils", count: products.filter((p) => p.category === "oils").length },
+    { id: "packaging", name: "Packaging", count: products.filter((p) => p.category === "packaging").length },
     { id: "grains", name: "Grains", count: products.filter((p) => p.category === "grains").length },
   ]
 
@@ -445,9 +607,11 @@ export default function MarketplacePage() {
               {sortedProducts.map((product) => (
                 <Card key={product.id} className="group hover:shadow-lg transition-shadow">
                   <div className="relative">
-                    <img
+                    <Image
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
+                      width={400}
+                      height={300}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                     {product.organic && (
