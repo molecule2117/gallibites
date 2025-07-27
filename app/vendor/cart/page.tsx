@@ -1,307 +1,360 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Minus, Plus, Trash2, ShoppingBag, Leaf, MapPin, Clock, CreditCard } from "lucide-react"
-
-interface CartItem {
-  id: string
-  name: string
-  image: string
-  price: number
-  quantity: number
-  seller: string
-  ecoFriendly: boolean
-  deliveryTime: string
-  distance: string
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Trash2, ShoppingCart, Leaf, MapPin, Clock, CreditCard, ArrowLeft } from "lucide-react"
+import { useCartContext } from "@/components/cart-provider"
+import { AddToCartButton } from "@/components/add-to-cart-button"
+import Link from "next/link"
+import { useState } from "react"
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Fresh Onions",
-      image: "/products/fresh-onions.jpg",
-      price: 30,
-      quantity: 2,
-      seller: "Green Valley Farm",
-      ecoFriendly: true,
-      deliveryTime: "30-45 min",
-      distance: "2.1 km",
-    },
-    {
-      id: "2",
-      name: "Red Chili Powder",
-      image: "/products/red-chili-powder.jpg",
-      price: 85,
-      quantity: 1,
-      seller: "Spice Garden",
-      ecoFriendly: false,
-      deliveryTime: "25-40 min",
-      distance: "1.5 km",
-    },
-    {
-      id: "3",
-      name: "Fresh Tomatoes",
-      image: "/products/fresh-tomatoes.jpg",
-      price: 45,
-      quantity: 3,
-      seller: "Local Farmers Co-op",
-      ecoFriendly: true,
-      deliveryTime: "45-60 min",
-      distance: "3.2 km",
-    },
-    {
-      id: "4",
-      name: "Turmeric Powder",
-      image: "/products/turmeric-powder.jpg",
-      price: 95,
-      quantity: 1,
-      seller: "Pure Spices",
-      ecoFriendly: true,
-      deliveryTime: "35-50 min",
-      distance: "2.3 km",
-    },
-  ])
+  const { cartItems, getCartTotal, getTotalEcoPoints, getTotalSavings, getOriginalTotal, removeFromCart, clearCart } =
+    useCartContext()
 
-  const [promoCode, setPromoCode] = useState("")
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null)
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+    pincode: "",
+    deliveryTime: "standard",
+  })
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(id)
-      return
-    }
-    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+  const subtotal = getCartTotal()
+  const originalTotal = getOriginalTotal()
+  const savings = getTotalSavings()
+  const deliveryFee = subtotal > 500 ? 0 : 40
+  const totalEcoPoints = getTotalEcoPoints()
+  const total = subtotal + deliveryFee
+
+  const handleInputChange = (field: string, value: string) => {
+    setDeliveryInfo((prev) => ({ ...prev, [field]: value }))
   }
-
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
-  }
-
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "eco10") {
-      setAppliedPromo("eco10")
-    } else if (promoCode.toLowerCase() === "first20") {
-      setAppliedPromo("first20")
-    }
-    setPromoCode("")
-  }
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const ecoItemsCount = cartItems.filter((item) => item.ecoFriendly).length
-  const ecoDiscount = appliedPromo === "eco10" ? subtotal * 0.1 : 0
-  const firstOrderDiscount = appliedPromo === "first20" ? subtotal * 0.2 : 0
-  const deliveryFee = subtotal > 200 ? 0 : 25
-  const ecoPoints = Math.floor(subtotal * 0.1) + ecoItemsCount * 10
-  const total = subtotal - ecoDiscount - firstOrderDiscount + deliveryFee
 
   if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="p-12 text-center">
-            <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Add some delicious items from our marketplace</p>
-            <Button>Continue Shopping</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <Link href="/vendor/marketplace" className="text-2xl font-bold text-green-600">
+                  GalliBites
+                </Link>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  Shopping Cart
+                </Badge>
+              </div>
+
+              <Link href="/vendor/marketplace">
+                <Button variant="outline">Continue Shopping</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+          <div className="text-center">
+            <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+            <p className="text-gray-600 mb-6">Add some fresh products to get started</p>
+            <Link href="/vendor/marketplace">
+              <Button className="bg-green-600 hover:bg-green-700">Start Shopping</Button>
+            </Link>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ShoppingBag className="w-5 h-5" />
-                <span>Your Cart ({cartItems.length} items)</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <div className="relative">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <Link href="/vendor/marketplace" className="text-2xl font-bold text-green-600">
+                GalliBites
+              </Link>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                Shopping Cart
+              </Badge>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Link href="/vendor/marketplace">
+                <Button variant="outline">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Continue Shopping
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cart Items */}
+          <div className="lg:col-span-2 space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Cart Items ({cartItems.length})
+                  </CardTitle>
+                  <Button variant="outline" size="sm" onClick={clearCart}>
+                    Clear Cart
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
                     <img
                       src={item.image || "/placeholder.svg"}
                       alt={item.name}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
-                    {item.ecoFriendly && (
-                      <Badge className="absolute -top-2 -right-2 bg-green-600 text-xs">
-                        <Leaf className="w-3 h-3" />
-                      </Badge>
-                    )}
-                  </div>
 
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-600">by {item.seller}</p>
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
-                      <div className="flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {item.distance}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                          <p className="text-sm text-gray-500">{item.unit}</p>
+                          <p className="text-xs text-gray-400">by {item.seller}</p>
+
+                          <div className="flex items-center space-x-2 mt-1">
+                            {item.isOrganic && (
+                              <Badge className="text-xs bg-green-100 text-green-800">
+                                <Leaf className="w-3 h-3 mr-1" />
+                                Organic
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              +{item.ecoPoints * item.quantity} EcoPoints
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <div className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {item.deliveryTime}
+
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-gray-900">₹{item.price}</span>
+                          {item.originalPrice && (
+                            <span className="text-sm text-gray-500 line-through">₹{item.originalPrice}</span>
+                          )}
+                          <span className="text-sm text-gray-500">× {item.quantity}</span>
+                          <span className="font-semibold text-green-600">= ₹{item.price * item.quantity}</span>
+                        </div>
+
+                        <AddToCartButton product={item} size="sm" showQuantityControls={true} />
                       </div>
                     </div>
                   </div>
+                ))}
+              </CardContent>
+            </Card>
 
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                    <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
+            {/* Delivery Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  Delivery Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={deliveryInfo.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      placeholder="Enter your full name"
+                    />
                   </div>
-
-                  <div className="text-right">
-                    <div className="font-semibold">₹{item.price * item.quantity}</div>
-                    <div className="text-sm text-gray-600">₹{item.price} each</div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={deliveryInfo.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      placeholder="Enter phone number"
+                    />
                   </div>
+                </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeItem(item.id)}
-                    className="text-red-600 hover:text-red-700"
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={deliveryInfo.address}
+                    onChange={(e) => handleInputChange("address", e.target.value)}
+                    placeholder="Enter your complete address"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={deliveryInfo.city}
+                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      placeholder="Enter city"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="pincode">Pincode</Label>
+                    <Input
+                      id="pincode"
+                      value={deliveryInfo.pincode}
+                      onChange={(e) => handleInputChange("pincode", e.target.value)}
+                      placeholder="Enter pincode"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="deliveryTime">Delivery Time</Label>
+                  <Select
+                    value={deliveryInfo.deliveryTime}
+                    onValueChange={(value) => handleInputChange("deliveryTime", value)}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-2" />
+                          Standard (2-3 hours) - Free
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="express">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-2" />
+                          Express (1 hour) - ₹25
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Promo Code */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Promo Code</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Enter promo code"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                />
-                <Button onClick={applyPromoCode} variant="outline">
-                  Apply
+          {/* Order Summary */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal}</span>
+                  </div>
+
+                  {savings > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Savings</span>
+                      <span>-₹{savings}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <span>Delivery Fee</span>
+                    <span>{deliveryFee === 0 ? "Free" : `₹${deliveryFee}`}</span>
+                  </div>
+
+                  {deliveryInfo.deliveryTime === "express" && (
+                    <div className="flex justify-between">
+                      <span>Express Delivery</span>
+                      <span>₹25</span>
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>₹{total + (deliveryInfo.deliveryTime === "express" ? 25 : 0)}</span>
+                  </div>
+                </div>
+
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="flex items-center text-green-700">
+                    <Leaf className="w-4 h-4 mr-2" />
+                    <span className="text-sm font-medium">You'll earn {totalEcoPoints} EcoPoints with this order!</span>
+                  </div>
+                </div>
+
+                {subtotal < 500 && (
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-blue-700 text-sm">Add ₹{500 - subtotal} more to get free delivery!</p>
+                  </div>
+                )}
+
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  size="lg"
+                  disabled={!deliveryInfo.name || !deliveryInfo.phone || !deliveryInfo.address}
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Proceed to Checkout
                 </Button>
-              </div>
-              {appliedPromo && (
-                <div className="mt-2">
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    {appliedPromo === "eco10" ? "ECO10: 10% off applied!" : "FIRST20: 20% off applied!"}
-                  </Badge>
+
+                <div className="text-center">
+                  <Link href="/vendor/marketplace">
+                    <Button variant="outline" className="w-full bg-transparent">
+                      Continue Shopping
+                    </Button>
+                  </Link>
                 </div>
-              )}
-              <div className="mt-3 text-sm text-gray-600">
-                <p>Available codes:</p>
-                <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>ECO10 - 10% off on eco-friendly items</li>
-                  <li>FIRST20 - 20% off on first order</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
 
-        {/* Order Summary */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal}</span>
+            {/* Payment Methods */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Accepted Payment Methods</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                  <div>• Credit/Debit Cards</div>
+                  <div>• UPI Payments</div>
+                  <div>• Net Banking</div>
+                  <div>• Cash on Delivery</div>
+                  <div>• Digital Wallets</div>
+                  <div>• EcoPoints Redemption</div>
                 </div>
-
-                {ecoDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Eco Discount (10%)</span>
-                    <span>-₹{ecoDiscount.toFixed(0)}</span>
-                  </div>
-                )}
-
-                {firstOrderDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>First Order Discount (20%)</span>
-                    <span>-₹{firstOrderDiscount.toFixed(0)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span>Delivery Fee</span>
-                  <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
-                </div>
-
-                {deliveryFee === 0 && <div className="text-xs text-green-600">Free delivery on orders above ₹200</div>}
-              </div>
-
-              <Separator />
-
-              <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>₹{total}</span>
-              </div>
-
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Leaf className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-800">You'll earn {ecoPoints} EcoPoints</span>
-                </div>
-                <p className="text-xs text-green-700 mt-1">{ecoItemsCount} eco-friendly items in your cart</p>
-              </div>
-
-              <Button className="w-full" size="lg">
-                <CreditCard className="w-4 h-4 mr-2" />
-                Proceed to Checkout
-              </Button>
-
-              <Button variant="outline" className="w-full bg-transparent">
-                Continue Shopping
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Delivery Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Delivery Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-600" />
-                  <span>Estimated delivery: 45-75 minutes</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-600" />
-                  <span>Multiple vendors in your area</span>
-                </div>
-                <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                  Orders from different vendors may arrive separately
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
